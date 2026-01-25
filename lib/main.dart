@@ -30,6 +30,7 @@ class _TodoListPageState extends State<TodoListPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        //文字の色を変更
         title: Text(
             'リスト一覧',
             style: TextStyle(
