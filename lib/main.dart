@@ -30,7 +30,12 @@ class _TodoListPageState extends State<TodoListPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('リスト一覧'),
+        title: Text(
+            'リスト一覧',
+            style: TextStyle(
+              color: Colors.blue
+            ),
+        ),
       ),
       body: ListView.builder(
           itemCount: todoList.length,
@@ -106,7 +111,7 @@ class _TodoAddPageState extends State<TodoAddPage> {
                     if (text.isEmpty) return;
                     Navigator.of(context).pop(text);
                   },
-                  child: Text('リスト追加', style: TextStyle(color: Colors.white)),
+                  child: Text('リスト追加', style: TextStyle(color: Colors.black)),
               ),
             ),
           ],
