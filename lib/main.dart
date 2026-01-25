@@ -37,6 +37,8 @@ class _TodoListPageState extends State<TodoListPage> {
               color: Colors.blue
             ),
         ),
+        //タイトルを中央寄せ
+        centerTitle: true,
       ),
       body: ListView.builder(
           itemCount: todoList.length,
