@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 
 void main() {
-  runApp(MyTodoApp());
+  runApp(const MyTodoApp());
 }
 
 class MyTodoApp extends StatelessWidget {
+  const MyTodoApp({super.key});
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -12,74 +14,103 @@ class MyTodoApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: TodoListPage(),
+      home: const TodoListPage(),
     );
   }
 }
 
-//リスト一覧画面用ウィジェット
+// リスト一覧画面
 class TodoListPage extends StatefulWidget {
+  const TodoListPage({super.key});
+
   @override
-  _TodoListPageState createState() => _TodoListPageState();
+  State<TodoListPage> createState() => _TodoListPageState();
 }
 
 class _TodoListPageState extends State<TodoListPage> {
-  List<String> todoList = [];
+  final List<String> todoList = [];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        //文字の色を変更
-        title: Text(
-            'リスト一覧',
-            style: TextStyle(
-              color: Colors.blue
-            ),
+        title: const Text(
+          'リスト一覧',
+          style: TextStyle(color: Colors.white),
         ),
-        //タイトルを中央寄せ
         centerTitle: true,
       ),
-      body: ListView.builder(
-          itemCount: todoList.length,
-          itemBuilder: (context, index) {
-            return Card(
-              child: ListTile(
-                title: Text(todoList[index]),
-                trailing: IconButton(
-                    icon: const Icon(Icons.delete_outline),
-                    onPressed: () {
-                      setState(() {
-                        todoList.removeAt(index);
-                      });
-                    },
-                ),
+      body: todoList.isEmpty
+      // ✅ 空リスト時の表示
+          ? const Center(
+        child: Text(
+          'まだリストがありません\n＋ボタンから追加してください',
+          textAlign: TextAlign.center,
+          style: TextStyle(fontSize: 16),
+        ),
+      )
+          : ListView.builder(
+        itemCount: todoList.length,
+        itemBuilder: (context, index) {
+          return Card(
+            elevation: 3,
+            margin: const EdgeInsets.symmetric(
+                horizontal: 12, vertical: 6),
+            child: ListTile(
+              title: Text(todoList[index]),
+              trailing: IconButton(
+                icon: const Icon(Icons.delete_outline),
+                onPressed: () {
+                  setState(() {
+                    todoList.removeAt(index);
+                  });
+
+                  // ✅ 削除通知
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('削除しました'),
+                      duration: Duration(seconds: 1),
+                    ),
+                  );
+                },
               ),
-            );
-          },
+            ),
+          );
+        },
       ),
       floatingActionButton: FloatingActionButton(
-          onPressed: () async{
-            final newListText = await Navigator.of(context).push(
-                MaterialPageRoute(builder: (context) {
-                  return TodoAddPage();
-                }),
+        onPressed: () async {
+          final newListText = await Navigator.of(context).push<String>(
+            MaterialPageRoute(
+              builder: (context) => const TodoAddPage(),
+            ),
+          );
+
+          if (newListText != null) {
+            setState(() {
+              todoList.add(newListText);
+            });
+
+            // ✅ 追加通知
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('「$newListText」を追加しました'),
+                duration: const Duration(seconds: 1),
+              ),
             );
-            if (newListText != null) {
-              setState(() {
-                todoList.add(newListText);
-              });
-            }
-          },
-          child: Icon(Icons.add),
+          }
+        },
+        child: const Icon(Icons.add),
       ),
     );
   }
 }
 
 class TodoAddPage extends StatefulWidget {
+  const TodoAddPage({super.key});
+
   @override
-  _TodoAddPageState createState() => _TodoAddPageState();
+  State<TodoAddPage> createState() => _TodoAddPageState();
 }
 
 class _TodoAddPageState extends State<TodoAddPage> {
@@ -89,32 +120,42 @@ class _TodoAddPageState extends State<TodoAddPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('リスト追加'),
+        title: const Text('リスト追加'),
       ),
-      body: Container(
-        padding: EdgeInsets.all(64),
+      body: Padding(
+        padding: const EdgeInsets.all(32),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            Text(_text, style: TextStyle(color: Colors.blue)),
-            const SizedBox(height: 8),
+          children: [
+            Text(
+              _text,
+              style: const TextStyle(
+                color: Colors.blue,
+                fontSize: 18,
+              ),
+            ),
+            const SizedBox(height: 16),
             TextField(
-              onChanged: (String value) {
+              decoration: const InputDecoration(
+                hintText: 'やることを入力してください',
+                border: OutlineInputBorder(),
+              ),
+              onChanged: (value) {
                 setState(() {
                   _text = value;
                 });
               },
             ),
-            const SizedBox(height: 8),
-            Container(
+            const SizedBox(height: 16),
+            SizedBox(
               width: double.infinity,
               child: ElevatedButton(
-                  onPressed: () {
-                    final text = _text.trim();
-                    if (text.isEmpty) return;
-                    Navigator.of(context).pop(text);
-                  },
-                  child: Text('リスト追加', style: TextStyle(color: Colors.black)),
+                onPressed: () {
+                  final text = _text.trim();
+                  if (text.isEmpty) return;
+                  Navigator.of(context).pop(text);
+                },
+                child: const Text('リスト追加'),
               ),
             ),
           ],
