@@ -9,12 +9,8 @@ class MyTodoApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'My Todo App',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-      ),
-      home: const TodoListPage(),
+    return const MaterialApp(
+      home: TodoListPage(),
     );
   }
 }
