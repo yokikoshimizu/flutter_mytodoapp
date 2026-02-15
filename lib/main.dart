@@ -15,7 +15,34 @@ class MyTodoApp extends StatelessWidget {
   }
 }
 
-// リスト一覧画面
+class TodoItem {
+  int? id;
+  String title;
+  bool isDone;
+
+  TodoItem({
+    this.id,
+    required this.title,
+    this.isDone = false
+  });
+
+  Map<String, dynamic> toMap() {
+    return {
+      'id': id,
+      'title': title,
+      'isDone': isDone ? 1 : 0,
+    };
+  }
+
+  factory TodoItem.fromMap(Map<String, dynamic> map) {
+    return TodoItem(
+      id: map['id'],
+      title: map['title'],
+      isDone: map['isDone'] == 1,
+    );
+  }
+}
+
 class TodoListPage extends StatefulWidget {
   const TodoListPage({super.key});
 
@@ -24,50 +51,46 @@ class TodoListPage extends StatefulWidget {
 }
 
 class _TodoListPageState extends State<TodoListPage> {
-  final List<String> todoList = [];
+  final List<TodoItem> todoList = [];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text(
-          'リスト一覧',
-          style: TextStyle(color: Colors.white),
-        ),
-        centerTitle: true,
-      ),
+      appBar: AppBar(title: const Text('リスト一覧')),
       body: todoList.isEmpty
-      // ✅ 空リスト時の表示
-          ? const Center(
-        child: Text(
-          'まだリストがありません\n＋ボタンから追加してください',
-          textAlign: TextAlign.center,
-          style: TextStyle(fontSize: 16),
-        ),
-      )
+          ? const Center(child: Text('まだリストがありません'))
           : ListView.builder(
         itemCount: todoList.length,
         itemBuilder: (context, index) {
+          final item = todoList[index];
+
           return Card(
-            elevation: 3,
-            margin: const EdgeInsets.symmetric(
-                horizontal: 12, vertical: 6),
             child: ListTile(
-              title: Text(todoList[index]),
+              leading: Checkbox(
+                value: item.isDone,
+                onChanged: (value) {
+                  setState(() {
+                    item.isDone = value!;
+                  });
+                },
+              ),
+              title: Text(
+                item.title,
+                style: TextStyle(
+                  decoration: item.isDone
+                      ? TextDecoration.lineThrough
+                      : TextDecoration.none,
+                  color: item.isDone
+                      ? Colors.grey
+                      : Colors.black,
+                ),
+              ),
               trailing: IconButton(
-                icon: const Icon(Icons.delete_outline),
+                icon: const Icon(Icons.delete),
                 onPressed: () {
                   setState(() {
                     todoList.removeAt(index);
                   });
-
-                  // ✅ 削除通知
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('削除しました'),
-                      duration: Duration(seconds: 1),
-                    ),
-                  );
                 },
               ),
             ),
@@ -76,24 +99,16 @@ class _TodoListPageState extends State<TodoListPage> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () async {
-          final newListText = await Navigator.of(context).push<String>(
+          final newText = await Navigator.of(context).push<String>(
             MaterialPageRoute(
               builder: (context) => const TodoAddPage(),
             ),
           );
 
-          if (newListText != null) {
+          if (newText != null) {
             setState(() {
-              todoList.add(newListText);
+              todoList.add(TodoItem(title: newText));
             });
-
-            // ✅ 追加通知
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text('「$newListText」を追加しました'),
-                duration: const Duration(seconds: 1),
-              ),
-            );
           }
         },
         child: const Icon(Icons.add),
@@ -115,44 +130,29 @@ class _TodoAddPageState extends State<TodoAddPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('リスト追加'),
-      ),
+      appBar: AppBar(title: const Text('リスト追加')),
       body: Padding(
         padding: const EdgeInsets.all(32),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text(
-              _text,
-              style: const TextStyle(
-                color: Colors.blue,
-                fontSize: 18,
-              ),
-            ),
-            const SizedBox(height: 16),
             TextField(
               decoration: const InputDecoration(
-                hintText: 'やることを入力してください',
+                hintText: 'やることを入力',
                 border: OutlineInputBorder(),
               ),
               onChanged: (value) {
-                setState(() {
-                  _text = value;
-                });
+                _text = value;
               },
             ),
             const SizedBox(height: 16),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: () {
-                  final text = _text.trim();
-                  if (text.isEmpty) return;
-                  Navigator.of(context).pop(text);
-                },
-                child: const Text('リスト追加'),
-              ),
+            ElevatedButton(
+              onPressed: () {
+                final text = _text.trim();
+                if (text.isEmpty) return;
+                Navigator.of(context).pop(text);
+              },
+              child: const Text('追加'),
             ),
           ],
         ),
